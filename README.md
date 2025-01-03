@@ -10,7 +10,7 @@ The misconfig-Policy-Generator tool automates the generation of security policie
    - `yamllint`
    - `jsonlint`
 2. Clone this repository:
-   - `git clone https://github.com/CY83R-3X71NC710N/misconfig-Policy-Generator.git`
+   - `git clone https://github.com/ShadowStrikeHQ/misconfig-Policy-Generator.git`
 3. Navigate to the cloned directory:
    - `cd misconfig-Policy-Generator`
 
