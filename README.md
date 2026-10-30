@@ -1,3 +1,5 @@
+![Banner](banner.png)
+
 # misconfig-Policy-Generator
 
 ### Overview
