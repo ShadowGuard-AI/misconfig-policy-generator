@@ -7,8 +7,8 @@ The misconfig-Policy-Generator tool automates the generation of security policie
 ### Installation
 
 1. Install the required dependencies:
-   - `yamllint`
-   - `jsonlint`
+   - `yamllint` (Python package, imported by main.py to validate YAML input)
+   - `PyYAML`
 2. Clone this repository:
    - `git clone https://github.com/ShadowStrikeHQ/misconfig-Policy-Generator.git`
 3. Navigate to the cloned directory:
@@ -17,30 +17,31 @@ The misconfig-Policy-Generator tool automates the generation of security policie
 ### Usage
 
 ```
-python main.py [OPTIONS]
+python main.py -i INPUT -o OUTPUT -f {json,yaml}
 ```
-
-#### General Usage
 
 - `-h`, `--help`: Display help message and exit
-- `-c`, `--config`: Path to a configuration file in YAML format
+- `-i`, `--input`: Path to the configuration file (JSON or YAML). Required.
+- `-o`, `--output`: Path to save the generated security policy. Required.
+- `-f`, `--format`: Format of the output security policy (`json` or `yaml`). Required.
 
-#### Configuration File Options
+#### Input File
 
-The configuration file should be in YAML format and specify the following parameters:
+The input file is a JSON or YAML file whose top level is a mapping of configuration keys to values. YAML input is validated with yamllint before it is parsed; JSON input is parsed directly. The generated policy contains one rule per top-level key, named `Check <key>`, with the description `Ensure <key> is configured correctly.` and that key's value, plus generated-by metadata.
 
-- `policies`: A list of dictionaries, each representing a security policy. Each policy should have the following keys:
-  - `name`: The name of the policy
-  - `criteria`: A dictionary of criteria to check for misconfigurations. The keys are the names of the criteria, and the values are the expected values.
+For example, with an input file containing:
 
-For example:
-
-```yaml
-policies:
-  - name: Check for missing SSH keys
-    criteria:
-      - ssh_key_path: /etc/ssh/ssh_host_rsa_key
+```json
+{"ssh_enabled": true, "port": 22}
 ```
+
+running:
+
+```
+python main.py -i config.json -o policy.json -f json
+```
+
+writes a JSON policy whose rules list contains one entry for `ssh_enabled` and one for `port`.
 
 ### Security Warnings
 
