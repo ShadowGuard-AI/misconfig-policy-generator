@@ -8,7 +8,7 @@ The misconfig-Policy-Generator tool automates the generation of security policie
 
 ### Installation
 
-1. Install the required dependencies:
+1. Install the required dependencies with `pip install -r requirements.txt`:
    - `yamllint` (Python package, imported by main.py to validate YAML input)
    - `PyYAML`
 2. Clone this repository:
@@ -44,6 +44,13 @@ python main.py -i config.json -o policy.json -f json
 ```
 
 writes a JSON policy whose rules list contains one entry for `ssh_enabled` and one for `port`.
+
+#### Behaviour notes
+
+- Exit codes: a successfully generated policy exits 0. Every failure exits 1, including a missing or malformed input file, an unsupported extension, a non-mapping document, and an unserializable value.
+- The output path must not be the input file. If the resolved output path equals the resolved input path, the tool refuses before writing anything, exits 1, and the input file is left unchanged.
+- An empty input object generates nothing: the tool reports that no policy was generated and exits 1 without writing an output file.
+- YAML lint: yamllint findings at error severity reject the YAML input. Findings at warning severity, such as trailing spaces, are logged as warnings and do not reject the input, which is then parsed normally.
 
 ### Security Warnings
 

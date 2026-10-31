@@ -1,6 +1,8 @@
 import argparse
 import logging
 import json
+import sys
+from pathlib import Path
 import yaml
 from yamllint import linter as yamllinter
 from yamllint.config import YamlLintConfig
@@ -45,8 +47,12 @@ def validate_yaml(filepath):
             yaml_content = file.read()
         config = YamlLintConfig('extends: default')
         lint_results = list(yamllinter.run(yaml_content, config))
-        if lint_results:
-            raise ValueError(f"YAML validation errors: {lint_results}")
+        errors = [p for p in lint_results if getattr(p, 'level', 'error') == 'error']
+        warnings = [p for p in lint_results if getattr(p, 'level', 'error') != 'error']
+        for warning in warnings:
+            logger.warning(f"YAML lint warning (not rejecting the input): {warning}")
+        if errors:
+            raise ValueError(f"YAML validation errors: {errors}")
         return yaml.safe_load(yaml_content)
     except Exception as e:
         logger.error(f"YAML validation failed: {e}")
@@ -101,6 +107,12 @@ def main():
     args = parser.parse_args()
 
     try:
+        if Path(args.output).resolve() == Path(args.input).resolve():
+            raise ValueError(
+                "Output path is the input file; refusing to overwrite the input configuration. "
+                "Choose a different output path."
+            )
+
         file_ext = args.input.split('.')[-1]
         if file_ext == 'yaml' or file_ext == 'yml':
             data = validate_yaml(args.input)
@@ -108,7 +120,12 @@ def main():
             data = validate_json(args.input)
         else:
             raise ValueError("Unsupported input file format. Please provide a JSON or YAML file.")
-        
+
+        if not isinstance(data, dict):
+            raise ValueError("Input document must be a mapping of configuration keys to values; no policy was generated.")
+        if not data:
+            raise ValueError("Input document contains no keys; no policy was generated.")
+
         policy = generate_policy(data, args.format)
         
         with open(args.output, 'w') as output_file:
@@ -117,6 +134,7 @@ def main():
     
     except Exception as e:
         logger.error(f"An error occurred: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
